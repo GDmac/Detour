@@ -28,16 +28,18 @@ class Detour_ext {
 	
 	function sessions_start(){
 	
+		$url = $this->EE->uri->uri_string;
+
 		$sql = "SELECT new_url, detour_method
 		FROM exp_detours 
-		WHERE original_url = '" . $this->EE->uri->uri_string . "' LIMIT 1";
+		WHERE original_url = '" . $this->EE->db->escape_str($url) . "' LIMIT 1";
 
 		$query = $this->EE->db->query($sql);
 
 		if($query->num_rows() > 0)
 		{
 			$row = $query->row();
-			
+
 			header('Location: ' . $row->new_url, TRUE, $row->detour_method);		
 			$this->extensions->end_script;
 			exit;
