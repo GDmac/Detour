@@ -4,7 +4,7 @@ class Detour_ext {
 
 	var $settings        = array();
 	var $name            = 'Detour';
-	var $version         = '0.5';
+	var $version         = '0.6';
 	var $description     = 'Reroute urls to another URL.';
 	var $settings_exist  = 'y';
 	var $docs_url        = 'http://www.cityzen.com/addons/detour';
