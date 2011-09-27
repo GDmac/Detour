@@ -29,7 +29,7 @@ class Detour_ext {
 	function sessions_start(){
 	
 		// $url = $this->EE->uri->uri_string;
-		$url = ltrim($_SERVER['REQUEST_URI'], '/');
+		$url = trim($_SERVER['REQUEST_URI'], '/');
 		
 		$sql = "SELECT new_url, detour_method
 		FROM exp_detours 
