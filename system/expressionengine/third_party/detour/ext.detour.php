@@ -4,7 +4,7 @@ class Detour_ext {
 
 	var $settings        = array();
 	var $name            = 'Detour';
-	var $version         = '0.6';
+	var $version         = '0.7';
 	var $description     = 'Reroute urls to another URL.';
 	var $settings_exist  = 'y';
 	var $docs_url        = 'http://www.cityzen.com/addons/detour';
@@ -170,16 +170,43 @@ class Detour_ext {
 			'original_url'	=> array('type' => 'varchar', 'constraint' => '250'),
 			'new_url'	=> array('type' => 'varchar', 'constraint' => '250', 'null' => TRUE, 'default' => NULL), 
 			'detour_method' => array('type' => 'int', 'constraint' => '3', 'unsigned' => TRUE, 'default' => '301'),
-			'hitcounter'	=> array('type' => 'int', 'constraint' => '8', 'unsigned' => TRUE, 'null' => FALSE)
+			'hitcounter' => array('type' => 'int', 'constraint' => '8', 'unsigned' => TRUE, 'null' => FALSE)
 		);
 
 		$this->EE->dbforge->add_field($fields);
 		$this->EE->dbforge->add_key('detour_id', TRUE);
 	
 		$this->EE->dbforge->create_table('detours');
-		
-		unset($fields);
-	      
+			      
+	}
+
+
+	function update_extension($current = '')
+	{
+    	if ($current == '' OR $current == $this->version)
+    	{
+        	return FALSE;
+    	}
+
+	    if ($current < '0.7')
+    	{
+	        // Update to version 0.7 with hitcounter
+
+			$this->EE->load->dbforge();
+
+			$fields = array(
+				'hitcounter' => array('type' => 'int', 'constraint' => '8', 'unsigned' => TRUE, 'null' => FALSE)
+			);
+
+			$this->EE->dbforge->add_column('detours', $fields);
+
+    	}
+
+	    $this->EE->db->where('class', __CLASS__);
+		$this->EE->db->update(
+			'extensions',
+			array('version' => $this->version)
+		);
 	}
 
 	
