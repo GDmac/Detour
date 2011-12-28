@@ -31,7 +31,7 @@ class Detour_ext {
 		// $url = $this->EE->uri->uri_string;
 		$url = trim($_SERVER['REQUEST_URI'], '/');
 		
-		$sql = "SELECT new_url, detour_method
+		$sql = "SELECT detour_id, new_url, detour_method
 		FROM exp_detours 
 		WHERE original_url = '" . $this->EE->db->escape_str($url) . "' LIMIT 1";
 
@@ -40,6 +40,10 @@ class Detour_ext {
 		if($query->num_rows() > 0)
 		{
 			$row = $query->row();
+			
+			// store a hit to the database
+			$sql = "UPDATE exp_detours SET hitcounter=hitcounter+1 WHERE detour_id=".$row->detour_id;
+			$query = $this->EE->db->query($sql);
 
 			header('Location: ' . $row->new_url, TRUE, $row->detour_method);		
 			$this->extensions->end_script;
@@ -67,14 +71,14 @@ class Detour_ext {
 		
 		$vars['currentDetours'] = array();
 		
-		$currentDetoursSQL = $this->EE->db->query("SELECT detour_id, original_url, new_url, detour_method
+		$currentDetoursSQL = $this->EE->db->query("SELECT detour_id, original_url, new_url, detour_method, hitcounter
 			FROM exp_detours 
 			ORDER BY detour_id");
 		
 		foreach($currentDetoursSQL->result_array() as $value)
 		{
 			extract($value);
-			$vars['currentDetours'][] = array($original_url, $new_url, $detour_id, $detour_method);
+			$vars['currentDetours'][] = array($original_url, $new_url, $detour_id, $detour_method, $hitcounter );
 		}
 		
 		return $this->EE->load->view('settings', $vars, TRUE);
@@ -99,11 +103,18 @@ class Detour_ext {
 		
 			$data = array(
 				'original_url' => xss_clean($original_url),
-				'new_url' => $_POST['new_url'], 
-				'detour_method' => $_POST['new_detour_method']
+				'new_url' => xss_clean($_POST['new_url']), 
+				'detour_method' => xss_clean($_POST['new_detour_method'])
 			);
 	
-			$this->EE->db->insert('exp_detours', $data);
+			if( $original_url != $_POST['new_url'] )
+			{
+				$this->EE->db->insert('exp_detours', $data);
+			}
+			else
+			{
+				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('original_equals_redirect'));
+			}
 			
 		}
 		
@@ -117,6 +128,17 @@ class Detour_ext {
 			
 		}
 		
+		if(!empty($_POST['hits_delete'])){
+			
+			$delete_sql = "UPDATE 
+			exp_detours SET hitcounter=0
+			WHERE detour_id IN (" . implode(',', $_POST['hits_delete']) . ")";
+
+			$this->EE->db->query($delete_sql);
+			
+		}
+
+
 		$this->EE->functions->redirect(
 			BASE.AMP.'C=addons_extensions'.AMP.'M=extension_settings'.AMP.'file=detour'
 		);
@@ -147,7 +169,8 @@ class Detour_ext {
 			'detour_id'	=> array('type' => 'int', 'constraint' => '10', 'unsigned' => TRUE, 'auto_increment' => TRUE),
 			'original_url'	=> array('type' => 'varchar', 'constraint' => '250'),
 			'new_url'	=> array('type' => 'varchar', 'constraint' => '250', 'null' => TRUE, 'default' => NULL), 
-			'detour_method' => array('type' => 'int', 'constraint' => '3', 'unsigned' => TRUE, 'default' => '301')
+			'detour_method' => array('type' => 'int', 'constraint' => '3', 'unsigned' => TRUE, 'default' => '301'),
+			'hitcounter'	=> array('type' => 'int', 'constraint' => '8', 'unsigned' => TRUE, 'null' => FALSE)
 		);
 
 		$this->EE->dbforge->add_field($fields);

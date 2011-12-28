@@ -13,17 +13,23 @@
 	$this->table->set_heading(
 		array(
 			'data' => $this->EE->lang->line('title_url'),
-			'style' => 'width:45%;'
+			'style' => 'width:40%;'
 		),
 		array(
 			'data' => $this->EE->lang->line('title_redirect'),
-			'style' => 'width:45%;'
+			'style' => 'width:35%;'
 		),
 		array(
 			'data' => $this->EE->lang->line('title_method')
 		),	
 		array(
 			'data' => 'Delete'
+		),
+		array(
+			'data' => 'Hits'
+		),
+		array(
+			'data' => 'Reset Hits'
 		)
 	);
 
@@ -42,7 +48,9 @@
 			$detour[0],
 			$detour[1],
 			'<strong>' . $detour[3] . '</strong>',
-			'<input type="checkbox" name="detour_delete[]" value="' . $detour[2] . '" />'
+			'<input type="checkbox" name="detour_delete[]" value="' . $detour[2] . '" />',
+			($detour[4]==0 ? '&nbsp;' : $detour[4]),
+			'<input type="checkbox" name="hits_delete[]" value="' . $detour[2] . '" />'
 		);
 	
 	}
@@ -51,11 +59,11 @@
 		form_input('old_url', ''),
 		form_input('new_url', ''),
 		'<select name="new_detour_method"><option value="301">301</option><option value="302">302</option></select>',
-		'&nbsp;' // Just a space placeholder
+		'&nbsp;', '&nbsp;', '&nbsp;' // Space-placeholders for empty collumns
 	);
 
-	echo $this->table->generate();							
-	
+	echo $this->table->generate();	
+
 	echo form_submit(array('name' => 'submit', 'value' => $this->EE->lang->line('save_settings'), 'class' => 'submit'));
 	echo form_close();
 
